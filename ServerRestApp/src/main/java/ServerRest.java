@@ -75,11 +75,11 @@ public class ServerRest {
 			return om.writeValueAsString(p);
 		});
 		
-		/*INIZIATO DA QUI*/		
+/*INIZIATO DA QUI*/		
 		// GET - mostra prodotti in base al tipo passato
 		// "http://sbaccioserver.ddns.net:8081/prodotto/ --da provare"
 		get("/prodotto/:tipo", (request, response) -> {
-			String tipo = request.queryParams(":tipo");
+			String tipo = request.params(":tipo");
 			String query;
 
 			query = String.format("SELECT * FROM prodotto "
@@ -129,7 +129,7 @@ public class ServerRest {
 		// GET - mostra ordini in base al numero del tavolo  che hanno chiuso = 0 (e pronto = 1)
 		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
 		get("/ordine/:ntavolo", (request, response) -> {
-			String ntavolo = request.queryParams(":ntavolo");
+			String ntavolo = request.params(":ntavolo");
 			String query;
 
 			query = String.format("SELECT * FROM ordine "
@@ -163,7 +163,7 @@ public class ServerRest {
 		// GET - mostra scontrino in base al ido passato e preso da query prima(via client)
 		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
 		get("/scontrino/:ido", (request, response) -> {
-			int ido = Integer.parseInt(request.queryParams(":ido"));
+			int ido = Integer.parseInt(request.params(":ido"));
 			String query;
 
 			query = String.format("SELECT * FROM scontrino "
