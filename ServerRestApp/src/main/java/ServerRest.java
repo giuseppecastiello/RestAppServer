@@ -77,7 +77,7 @@ public class ServerRest {
 		
 		/*INIZIATO DA QUI*/		
 		// GET - mostra prodotti in base al tipo passato
-		// "http://sbaccioserver.ddns.net:8080/prodotto/ --da provare"
+		// "http://sbaccioserver.ddns.net:8081/prodotto/ --da provare"
 		get("/prodotto/:tipo", (request, response) -> {
 			String tipo = request.queryParams(":tipo");
 			String query;
@@ -95,7 +95,7 @@ public class ServerRest {
 		});
 
 		// GET - mostra tutti gli ordini aperti(chiuso = 0) (PER SALA)
-		// "http://sbaccioserver.ddns.net:8080/ordine_aperto"
+		// "http://sbaccioserver.ddns.net:8081/ordine_aperto"
 		get("/ordine_aperto", (request, response) -> {
 			String query;
 
@@ -111,7 +111,7 @@ public class ServerRest {
 		});
 
 		// GET - mostra tutti gli ordini aperti e non pronti(chiuso = 0 e pronto = 0) (PER CUCINA)
-		// "http://sbaccioserver.ddns.net:8080/ordine_in_preparazione"
+		// "http://sbaccioserver.ddns.net:8081/ordine_in_preparazione"
 		get("/ordine_in_preparazione", (request, response) -> {
 			String query;
 
@@ -127,7 +127,7 @@ public class ServerRest {
 		});
 
 		// GET - mostra ordini in base al numero del tavolo  che hanno chiuso = 0 (e pronto = 1)
-		// "http://sbaccioserver.ddns.net:8080/ordine/ --da provare"
+		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
 		get("/ordine/:ntavolo", (request, response) -> {
 			String ntavolo = request.queryParams(":ntavolo");
 			String query;
@@ -145,7 +145,7 @@ public class ServerRest {
 		});
 
 		// POST - crea scontrino cassa (da parametro ido passato e preso a query prima (via client))
-		// "http://sbaccioserver.ddns.net:8080/scontrino/add  --da provare
+		// "http://sbaccioserver.ddns.net:8081/scontrino/add  --da provare
 		post("/scontrino/add/:ido", (request, response) -> {
 			int ido = Integer.parseInt(request.queryParams(":ido")); 
 
@@ -161,7 +161,7 @@ public class ServerRest {
 		});
 
 		// GET - mostra scontrino in base al ido passato e preso da query prima(via client)
-		// "http://sbaccioserver.ddns.net:8080/ordine/ --da provare"
+		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
 		get("/scontrino/:ido", (request, response) -> {
 			int ido = Integer.parseInt(request.queryParams(":ido"));
 			String query;
