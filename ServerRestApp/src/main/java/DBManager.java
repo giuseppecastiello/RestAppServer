@@ -7,8 +7,8 @@ import java.sql.Statement;
 public class DBManager {
 	public static final String JDBCDriver = "com.mysql.cj.jdbc.Driver";
 	public static final String JDBCURL = "jdbc:mysql://localhost:3306/DBRestApp?"
-			//+ "user=bepis&password=OopRestApp"
-			+ "user=root&password=nbicocchi"
+			+ "user=bepis&password=OopRestApp"
+			//+ "user=root&password=nbicocchi"
 			+ "&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=CET";
 	protected Statement statement;
 	protected Connection connection;
