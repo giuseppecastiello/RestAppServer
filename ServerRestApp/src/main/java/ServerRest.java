@@ -35,7 +35,7 @@ public class ServerRest {
 	public void run() {
 		dbConnection();
 
-		port(8080);
+		port(8081);
 
 		get("/", (request, response) -> {
 			return "SERVER ONLINE";
