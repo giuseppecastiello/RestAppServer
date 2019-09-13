@@ -126,8 +126,8 @@ public class ServerRest {
 			return om.writeValueAsString(o);
 		});
 
-		// GET - mostra ordini in base al numero del tavolo  che hanno chiuso = 0 (e pronto = 1)
-		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
+		// GET - mostra ordini in base al numero del tavolo , che hanno chiuso = 0 (e pronto = 1)
+		// "http://sbaccioserver.ddns.net:8081/ordine/numerotavolo
 		get("/ordine/:ntavolo", (request, response) -> {
 			String ntavolo = request.params(":ntavolo");
 			String query;
@@ -145,9 +145,9 @@ public class ServerRest {
 		});
 
 		// POST - crea scontrino cassa (da parametro ido passato e preso a query prima (via client))
-		// "http://sbaccioserver.ddns.net:8081/scontrino/add  --da provare
+		// "http://sbaccioserver.ddns.net:8081/scontrino/add/idordine
 		post("/scontrino/add/:ido", (request, response) -> {
-			int ido = Integer.parseInt(request.queryParams(":ido")); 
+			int ido = Integer.parseInt(request.params(":ido")); 
 
 			String query = String.format(
 					"INSERT INTO scontrino (ido,tot) "
@@ -161,7 +161,7 @@ public class ServerRest {
 		});
 
 		// GET - mostra scontrino in base al ido passato e preso da query prima(via client)
-		// "http://sbaccioserver.ddns.net:8081/ordine/ --da provare"
+		// "http://sbaccioserver.ddns.net:8081/scontrino/idordine
 		get("/scontrino/:ido", (request, response) -> {
 			int ido = Integer.parseInt(request.params(":ido"));
 			String query;
