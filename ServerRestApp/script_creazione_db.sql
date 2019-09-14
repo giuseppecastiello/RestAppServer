@@ -35,25 +35,62 @@ tot DOUBLE NOT NULL,
 FOREIGN KEY (ido) REFERENCES ordine(ido) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Arancini di riso",5,5.00,"Antipasto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Impepata di cozze",3,8.00,"Antipasto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Crocchette di patate",10,4.00,"Antipasto");
+
 INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Tagliatelle al ragù",5,8.00,"Primo_piatto");
-INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Tagliata di manzo",8,14.00,"Secondo_piatto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Tortellini in brodo",4,10.00,"Primo_piatto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Tortelloni ricotta e spinaci",6,9.00,"Primo_piatto");
+
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Tagliata di manzo",8,16.00,"Secondo_piatto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Orata al sale grosso",4,18.00,"Secondo_piatto");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Arrosto di vitello",5,12.00,"Secondo_piatto");
+
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Zuppa Inglese",5,4.00,"Dolce");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Profitterol",5,4.00,"Dolce");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Sorbetto",7,3.00,"Dolce");
+
 INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Acqua naturale 1L",20,2.00,"Bibita_analcolica");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Coca Cola 0.66L",20,3.00,"Bibita_analcolica");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Estathe 0.66L",10,2.50,"Bibita_analcolica");
+
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Prosecco 0.75L",15,7.50,"Vino");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Rosso 0.75L",20,8.50,"Vino");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Bianco 0.75L",10,8.50,"Vino");
+
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Becks 0.66L",15,3.50,"Birra");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Moretti 0.66L",15,3.50,"Birra");
+INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ("Ichnusa 0.66L",15,4.00,"Birra");
 
 INSERT INTO ordine (idcameriere,ntavolo) VALUES (1,1); /*guarda se funziona il default*/
+INSERT INTO ordine (idcameriere,ntavolo) VALUES (1,2); /*guarda se funziona il default*/
+INSERT INTO ordine (idcameriere,ntavolo) VALUES (2,3); /*guarda se funziona il default*/
 
 INSERT INTO contiene VALUES (1,1,2);
 INSERT INTO contiene VALUES (1,2,2);
 INSERT INTO contiene VALUES (1,3,1);
+INSERT INTO contiene VALUES (1,20,1);
+
+INSERT INTO contiene VALUES (2,3,2);
+INSERT INTO contiene VALUES (2,5,1);
+INSERT INTO contiene VALUES (2,18,1);
+INSERT INTO contiene VALUES (2,7,2);
+
+INSERT INTO contiene VALUES (3,7,2);
+INSERT INTO contiene VALUES (3,2,2);
+INSERT INTO contiene VALUES (3,15,2);
+INSERT INTO contiene VALUES (3,19,1);
 
 CREATE VIEW totali_parziali as
 select o.ido, (p.prezzo * c.quantita) as tot_parz
 from ordine o join contiene c on o.ido=c.ido
-join prodotto p on p.idp=c.idp
-where o.ido = 1;
+join prodotto p on p.idp=c.idp;
 
 INSERT INTO scontrino (ido,tot) 
 select ido, sum(tot_parz)
-from totali_parziali;
+from totali_parziali
+group by ido;
 
 drop view totali_parziali;
 
