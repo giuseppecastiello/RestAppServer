@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class ServerRest {
 	static Logger logger = LoggerFactory.getLogger(ServerRest.class);
@@ -44,7 +44,7 @@ public class ServerRest {
 		// GET - mostra tutti i prodotti
 		get("/prodotto", (request, response) -> {
 			String query;
-
+			JsonGenerator g;
 			query = String.format("SELECT * FROM prodotto");
 			ResultSet rs = db.executeQuery(query);
 
@@ -53,7 +53,7 @@ public class ServerRest {
 				l.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
 						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
 			}
-			return om.writeValueAsString(l);
+			return om.writeValueAsString(l); 
 		});
 		
 		// POST - inserisce nuovo prodotto 
@@ -77,7 +77,7 @@ public class ServerRest {
 		
 /*INIZIATO DA QUI*/		
 		// GET - mostra prodotti in base al tipo passato
-		// "http://sbaccioserver.ddns.net:8081/prodotto/ --da provare"
+		// "http://sbaccioserver.ddns.net:8081/prodotto/tipo"
 		get("/prodotto/:tipo", (request, response) -> {
 			String tipo = request.params(":tipo");
 			String query;
@@ -91,6 +91,8 @@ public class ServerRest {
 				p.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
 						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
 			}
+			/*Prodotto p = new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo"));*/
 			return om.writeValueAsString(p);
 		});
 
@@ -142,6 +144,7 @@ public class ServerRest {
 						rs.getInt("ntavolo"), rs.getBoolean("pronto"), rs.getBoolean("chiuso")));
 			}
 			return om.writeValueAsString(o);
+			
 		});
 
 		// POST - crea scontrino cassa (da parametro ido passato e preso a query prima (via client))
