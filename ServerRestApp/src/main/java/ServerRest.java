@@ -43,7 +43,7 @@ public class ServerRest {
 		});
 		
 		// GET - mostra tutti i prodotti
-		get("/prodotto", (request, response) -> {
+		get("/prodotto/all", (request, response) -> {
 			String query;
 			JsonGenerator g;
 			query = String.format("SELECT * FROM prodotto");
@@ -58,7 +58,7 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce nuovo prodotto 
-		post("/prodotto/add_prodotto", (request, response) -> {
+		post("/prodotto/add", (request, response) -> {
 			/*int idp = Integer.parseInt(request.queryParams("idp"));  Chiedi ad Andre se e' necessario */
 			String nome = request.queryParams("nome");
 			int giacenza = Integer.parseInt(request.queryParams("giacenza"));
@@ -77,18 +77,16 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce nuovo ordine
-		post("/prodotto/add_ordine", (request, response) -> {
+		post("/ordine/add", (request, response) -> {
 			int idc = Integer.parseInt(request.queryParams("idcameriere"));
 			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
 			//int pronto = Integer.parseInt(request.queryParams("pronto"));
 			String query = String.format(
 					"INSERT INTO ordine_corrente (idcameriere,ntavolo) VALUES (%d,%d);",
 					idc,ntavolo);
-			//System.out.println(query);
 			db.executeUpdate(query);
 			response.status(201);
 			Ordine o = new Ordine(ntavolo, idc, 0);
-			//new Ordine(0, idc, ntavolo, 0, 0);// CONTINUA QUAAAAAAAAAAAAAAAAA (BEPIS)
 			return om.writeValueAsString(o);
 		});
 				
@@ -165,7 +163,7 @@ public class ServerRest {
 		});*/
 		
 		// POST - inserisce scontrino da view di appoggio e lo mostra
-		post("/prodotto/add_scontrino", (request, response) -> {
+		post("/scontrino/add", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
 			String query = String.format(
 					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
@@ -191,7 +189,7 @@ public class ServerRest {
 		
 		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
 		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo
-		delete("/drop_ordine/:ntavolo", (request, response) -> {
+		delete("/ordine/delete/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params("ntavolo"));
 			String query;
 
@@ -206,6 +204,23 @@ public class ServerRest {
 			db.executeUpdate(query);
 			return om.writeValueAsString("{status: ok}");
 		});
+
+		// GET - mostra tutti gli scontrini
+		// "http://sbaccioserver.ddns.net:8081/scontrino/all"
+		get("/scontrino/all", (request, response) -> {
+			String query;
+
+			query = String.format("SELECT * FROM scontrino");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Scontrino> s = new ArrayList<Scontrino>();
+			while (rs.next()) {
+				s.add(new Scontrino(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+						rs.getDate("datachiusura"), rs.getDouble("tot")));
+			}
+			return om.writeValueAsString(s);
+		});
+		
 				
 /*FINITO QUI*/
 
