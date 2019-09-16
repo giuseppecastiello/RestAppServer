@@ -23,7 +23,7 @@ public class ServerRest {
 	public void dbConnection() {
 		try {
 			db = new DBManager(DBManager.JDBCDriver, DBManager.JDBCURL);
-			db.executeQuery("SELECT * FROM ordine LIMIT 1");
+			db.executeQuery("SELECT * FROM prodotto LIMIT 1");
 		} catch (ClassNotFoundException e) {
 			System.out.println("Missign lib...");
 			throw new RuntimeException();
