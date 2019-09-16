@@ -1,39 +1,58 @@
 import java.util.Date;
 
 public class Scontrino {
-	int ido;
+	int ntavolo;
+	int idcameriere;
 	Date datachiusura = new Date();
 	double tot;
+
+	public Scontrino(int ntavolo, int idcameriere, Date datachiusura, double tot) {
+		super();
+		this.idcameriere = idcameriere;
+		this.ntavolo = ntavolo;
+		this.datachiusura = datachiusura;
+		this.tot = tot;
+	}
 	
-	public int getIdo() {
-		return ido;
+	public double getTotale() {
+		return tot;
 	}
-	public void setIdo(int ido) {
-		this.ido = ido;
+
+
+	public void setTotale(double tot) {
+		this.tot = tot;
 	}
+
+
 	public Date getDatachiusura() {
 		return datachiusura;
 	}
+
 	public void setDatachiusura(Date datachiusura) {
 		this.datachiusura = datachiusura;
 	}
-	public double getTot() {
-		return tot;
+
+	public int getIdcameriere() {
+		return idcameriere;
 	}
-	public void setTot(double tot) {
-		this.tot = tot;
+
+	public void setIdcameriere(int idcameriere) {
+		this.idcameriere = idcameriere;
 	}
-	
-	public Scontrino(int ido, Date datachiusura, double tot) {
-		super();
-		this.ido = ido;
-		this.datachiusura = datachiusura;
-		this.tot = tot;
+
+	public int getNtavolo() {
+		return ntavolo;
 	}
-	
+
+	public void setNtavolo(int ntavolo) {
+		this.ntavolo = ntavolo;
+	}
+
 	@Override
 	public String toString() {
-		return "Scontrino [ido=" + ido + ", datachiusura=" + datachiusura + ", tot=" + tot + "]";
+		return "Scontrino [ntavolo=" + ntavolo + ", idcameriere=" + idcameriere + ", datachiusura=" + datachiusura
+				+ ", totale=" + tot + "]";
 	}
+
 	
 }

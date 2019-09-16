@@ -1,3 +1,4 @@
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.port;
 import static spark.Spark.post;
@@ -57,7 +58,7 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce nuovo prodotto 
-		post("/prodotto/addProdotto", (request, response) -> {
+		post("/prodotto/add_prodotto", (request, response) -> {
 			/*int idp = Integer.parseInt(request.queryParams("idp"));  Chiedi ad Andre se e' necessario */
 			String nome = request.queryParams("nome");
 			int giacenza = Integer.parseInt(request.queryParams("giacenza"));
@@ -76,21 +77,20 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce nuovo ordine
-				post("/prodotto/addOrdine", (request, response) -> {
-					//int ido = Integer.parseInt(request.queryParams("ido"));
-					int idc = Integer.parseInt(request.queryParams("idcameriere"));
-					int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
-					//int pronto = Integer.parseInt(request.queryParams("pronto"));
-					//int chiuso = Integer.parseInt(request.queryParams("chiuso"));
-					String query = String.format(
-							"INSERT INTO ordine (idcameriere,ntavolo) VALUES (%d,%d);",
-							idc,ntavolo);
-					//System.out.println(query);
-					db.executeUpdate(query);
-					response.status(201);
-					Ordine o = new Ordine(0, idc, ntavolo, 0, 0);// CONTINUA QUAAAAAAAAAAAAAAAAA (BEPIS)
-					return om.writeValueAsString(o);
-				});
+		post("/prodotto/add_ordine", (request, response) -> {
+			int idc = Integer.parseInt(request.queryParams("idcameriere"));
+			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+			//int pronto = Integer.parseInt(request.queryParams("pronto"));
+			String query = String.format(
+					"INSERT INTO ordine_corrente (idcameriere,ntavolo) VALUES (%d,%d);",
+					idc,ntavolo);
+			//System.out.println(query);
+			db.executeUpdate(query);
+			response.status(201);
+			Ordine o = new Ordine(ntavolo, idc, 0);
+			//new Ordine(0, idc, ntavolo, 0, 0);// CONTINUA QUAAAAAAAAAAAAAAAAA (BEPIS)
+			return om.writeValueAsString(o);
+		});
 				
 		
 /*INIZIATO DA QUI*/		
@@ -114,91 +114,99 @@ public class ServerRest {
 			return om.writeValueAsString(p);
 		});
 
-		// GET - mostra tutti gli ordini aperti(chiuso = 0) (PER SALA)
+		// GET - mostra tutti gli ordini aperti (PER SALA)
 		// "http://sbaccioserver.ddns.net:8081/ordine_aperto"
 		get("/ordine_aperto", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM ordine WHERE chiuso = 0");
+			query = String.format("SELECT * FROM ordine_corrente");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
-				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+						rs.getInt("pronto")));
 			}
 			return om.writeValueAsString(o);
 		});
 
-		// GET - mostra tutti gli ordini aperti e non pronti(chiuso = 0 e pronto = 0) (PER CUCINA)
+		// GET - mostra tutti gli ordini aperti che non sono pronti(pronto = 0) (PER CUCINA)
 		// "http://sbaccioserver.ddns.net:8081/ordine_in_preparazione"
 		get("/ordine_in_preparazione", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM ordine WHERE chiuso = 0 AND pronto = 0");
+			query = String.format("SELECT * FROM ordine_corrente WHERE pronto = 0");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
-				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+						rs.getInt("pronto")));
 			}
 			return om.writeValueAsString(o);
 		});
-
-		// GET - mostra ordini in base al numero del tavolo , che hanno chiuso = 0 (e pronto = 1)
-		// "http://sbaccioserver.ddns.net:8081/ordine/numerotavolo
-		get("/ordine/:ntavolo", (request, response) -> {
-			String ntavolo = request.params(":ntavolo");
+		
+		/*// GET - (chiamato dopo click di chiusura ordine) mostra l'ordine legato ad un tavolo (che sarà poi da cancellare e droppare)
+		// "http://sbaccioserver.ddns.net:8081/ordine_corrente/numerotavolo
+		get("/ordine_corrente/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params("ntavolo"));
 			String query;
 
-			query = String.format("SELECT * FROM ordine "
-					+ "WHERE chiuso = 0 AND pronto = 1 AND ntavolo = %d;",ntavolo);
+			query = String.format("SELECT * FROM ordine_corrente "
+					+ "WHERE ntavolo = %d;",ntavolo);
 			ResultSet rs = db.executeQuery(query);
-
-			ArrayList<Ordine> o = new ArrayList<Ordine>();
-			while (rs.next()) {
-				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
 			}
+			Ordine o = new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+					rs.getInt("pronto"));
 			return om.writeValueAsString(o);
-			
-		});
-
-		// POST - crea scontrino cassa (da parametro ido passato e preso a query prima (via client))
-		// "http://sbaccioserver.ddns.net:8081/scontrino/add/idordine
-		post("/scontrino/add/:ido", (request, response) -> {
-			int ido = Integer.parseInt(request.params(":ido")); 
-
+		});*/
+		
+		// POST - inserisce scontrino da view di appoggio e lo mostra
+		post("/prodotto/add_scontrino", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
 			String query = String.format(
-					"INSERT INTO scontrino (ido,tot) "
-							+ "select ido, sum(totali_parziali)     "
-							+ "from totali_parziali"
-							+ "where ido = %d;", ido);
-			//System.out.println(query);
+					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
+					+ "SELECT ntavolo, idcameriere, sum(tot_parz)"
+					+ "FROM totali_parziali WHERE ntavolo = %d", ntavolo);			
 			db.executeUpdate(query);
 			response.status(201);
-			return om.writeValueAsString("ok");
+			
+			query = String.format(
+					"SELECT *"
+					+ "FROM scontrino WHERE ntavolo = %d"
+					+ "ORDER BY datachiusura DESC"
+					+ "LIMIT 1", ntavolo);	
+			ResultSet rs = db.executeQuery(query);
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+			Scontrino s = new Scontrino (rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+					rs.getDate("datachiusura"), rs.getDouble("tot")); 
+			return om.writeValueAsString(s);
 		});
-
-		// GET - mostra scontrino in base al ido passato e preso da query prima(via client)
-		// "http://sbaccioserver.ddns.net:8081/scontrino/idordine
-		get("/scontrino/:ido", (request, response) -> {
-			int ido = Integer.parseInt(request.params(":ido"));
+		
+		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
+		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo
+		delete("/drop_ordine/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params("ntavolo"));
 			String query;
 
-			query = String.format("SELECT * FROM scontrino "
-					+ "WHERE ido = %d;",ido);
+			query = String.format("SELECT * FROM ordine_corrente WHERE ntavolo = %d;",ntavolo);
 			ResultSet rs = db.executeQuery(query);
 			if (rs.next() == false) {
 				response.status(404);
 				return om.writeValueAsString("{status: failed}");
 			}
 
-			Scontrino s = new Scontrino(rs.getInt("ido"), rs.getDate("datachiusura"),
-					rs.getDouble("tot"));
-			return om.writeValueAsString(s);
+			query = String.format("DELETE FROM ordine_corrente WHERE ntavolo = '%d'", ntavolo);
+			db.executeUpdate(query);
+			return om.writeValueAsString("{status: ok}");
 		});
+				
 /*FINITO QUI*/
 
 	}
