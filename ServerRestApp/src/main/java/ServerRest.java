@@ -213,7 +213,7 @@ public class ServerRest {
 
 	public static void main(String[] args) {
 		new ServerRest().run();
-		System.out.println("");
+		
 	}
 
 }
