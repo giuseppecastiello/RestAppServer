@@ -57,14 +57,14 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce nuovo prodotto 
-		post("/prodotto/add", (request, response) -> {
-			int idp = Integer.parseInt(request.queryParams("idp")); /* Chiedi ad Andre se e' necessario */
+		post("/prodotto/addProdotto", (request, response) -> {
+			/*int idp = Integer.parseInt(request.queryParams("idp"));  Chiedi ad Andre se e' necessario */
 			String nome = request.queryParams("nome");
 			int giacenza = Integer.parseInt(request.queryParams("giacenza"));
-			Double prezzo = Double.parseDouble(request.queryParams("prezzo"));
 			String prezzoString = request.queryParams("prezzo");
+			Double prezzo = Double.parseDouble(prezzoString);
 			String tipo = request.queryParams("tipo");
-			Prodotto p = new Prodotto(idp, nome, giacenza, prezzo, tipo);
+			Prodotto p = new Prodotto(0, nome, giacenza, prezzo, tipo);
 			//System.out.println(p.toString());    
 			String query = String.format(
 					"INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ('%s',%d,%s,'%s');",
@@ -74,6 +74,24 @@ public class ServerRest {
 			response.status(201);
 			return om.writeValueAsString(p);
 		});
+		
+		// POST - inserisce nuovo ordine
+				post("/prodotto/addOrdine", (request, response) -> {
+					//int ido = Integer.parseInt(request.queryParams("ido"));
+					int idc = Integer.parseInt(request.queryParams("idcameriere"));
+					int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+					//int pronto = Integer.parseInt(request.queryParams("pronto"));
+					//int chiuso = Integer.parseInt(request.queryParams("chiuso"));
+					String query = String.format(
+							"INSERT INTO ordine (idcameriere,ntavolo) VALUES (%d,%d);",
+							idc,ntavolo);
+					//System.out.println(query);
+					db.executeUpdate(query);
+					response.status(201);
+					Ordine o = new Ordine(0, idc, ntavolo, 0, 0);// CONTINUA QUAAAAAAAAAAAAAAAAA (BEPIS)
+					return om.writeValueAsString(o);
+				});
+				
 		
 /*INIZIATO DA QUI*/		
 		// GET - mostra prodotti in base al tipo passato
@@ -107,7 +125,7 @@ public class ServerRest {
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
 				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getBoolean("pronto"), rs.getBoolean("chiuso")));
+						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
 			}
 			return om.writeValueAsString(o);
 		});
@@ -123,7 +141,7 @@ public class ServerRest {
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
 				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getBoolean("pronto"), rs.getBoolean("chiuso")));
+						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
 			}
 			return om.writeValueAsString(o);
 		});
@@ -141,7 +159,7 @@ public class ServerRest {
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
 				o.add(new Ordine(rs.getInt("ido"), rs.getInt("idcameriere"),
-						rs.getInt("ntavolo"), rs.getBoolean("pronto"), rs.getBoolean("chiuso")));
+						rs.getInt("ntavolo"), rs.getInt("pronto"), rs.getInt("chiuso")));
 			}
 			return om.writeValueAsString(o);
 			
@@ -190,8 +208,3 @@ public class ServerRest {
 	}
 
 }
-
-
-
-
-

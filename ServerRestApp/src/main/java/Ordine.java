@@ -2,10 +2,10 @@ public class Ordine {
 	int ido;
 	int idcameriere;
 	int ntavolo;
-	boolean pronto;
-	boolean chiuso;
+	int pronto;
+	int chiuso;
 
-	public Ordine(int ido, int idcameriere, int ntavolo, boolean pronto, boolean chiuso) {
+	public Ordine(int ido, int idcameriere, int ntavolo, int pronto, int chiuso) {
 		super();
 		this.ido = ido;
 		this.idcameriere = idcameriere;
@@ -38,19 +38,19 @@ public class Ordine {
 		this.ntavolo = ntavolo;
 	}
 
-	public boolean isPronto() {
+	public int isPronto() {
 		return pronto;
 	}
 
-	public void setPronto(boolean pronto) {
+	public void setPronto(int pronto) {
 		this.pronto = pronto;
 	}
 
-	public boolean isChiuso() {
+	public int isChiuso() {
 		return chiuso;
 	}
 
-	public void setChiuso(boolean chiuso) {
+	public void setChiuso(int chiuso) {
 		this.chiuso = chiuso;
 	}
 
