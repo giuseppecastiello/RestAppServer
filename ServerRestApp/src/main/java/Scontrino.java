@@ -1,12 +1,12 @@
-import java.util.Date;
+//import java.util.Date;
 
 public class Scontrino {
 	int ntavolo;
 	int idcameriere;
-	Date datachiusura = new Date();
+	String datachiusura;
 	double tot;
 
-	public Scontrino(int ntavolo, int idcameriere, Date datachiusura, double tot) {
+	public Scontrino(int ntavolo, int idcameriere,String datachiusura, double tot) {
 		super();
 		this.idcameriere = idcameriere;
 		this.ntavolo = ntavolo;
@@ -24,11 +24,11 @@ public class Scontrino {
 	}
 
 
-	public Date getDatachiusura() {
+	public String getDatachiusura() {
 		return datachiusura;
 	}
 
-	public void setDatachiusura(Date datachiusura) {
+	public void setDatachiusura(String datachiusura) {
 		this.datachiusura = datachiusura;
 	}
 

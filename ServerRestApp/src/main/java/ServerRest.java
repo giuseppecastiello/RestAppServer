@@ -181,7 +181,7 @@ public class ServerRest {
 				return om.writeValueAsString("{status: failed}");
 			}
 			Scontrino s = new Scontrino (rs.getInt("ntavolo"), rs.getInt("idcameriere"),
-					rs.getDate("datachiusura"), rs.getDouble("tot")); 
+					rs.getString("datachiusura"), rs.getDouble("tot")); 
 			return om.writeValueAsString(s);
 		});
 		
@@ -214,7 +214,7 @@ public class ServerRest {
 			ArrayList<Scontrino> s = new ArrayList<Scontrino>();
 			while (rs.next()) {
 				s.add(new Scontrino(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
-						rs.getDate("datachiusura"), rs.getDouble("tot")));
+						rs.getString("datachiusura"), rs.getDouble("tot")));
 			}
 			return om.writeValueAsString(s);
 		});
