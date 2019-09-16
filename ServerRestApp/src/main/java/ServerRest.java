@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonGenerator;
 
 public class ServerRest {
 	static Logger logger = LoggerFactory.getLogger(ServerRest.class);
@@ -45,7 +44,6 @@ public class ServerRest {
 		// GET - mostra tutti i prodotti
 		get("/prodotto/all", (request, response) -> {
 			String query;
-			JsonGenerator g;
 			query = String.format("SELECT * FROM prodotto");
 			ResultSet rs = db.executeQuery(query);
 
@@ -230,5 +228,4 @@ public class ServerRest {
 		new ServerRest().run();
 		
 	}
-
 }
