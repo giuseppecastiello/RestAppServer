@@ -82,8 +82,8 @@ public class ServerRest {
 			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
 			//int pronto = Integer.parseInt(request.queryParams("pronto"));
 			String query = String.format(
-					"INSERT INTO ordine_corrente (idcameriere,ntavolo) VALUES (%d,%d);",
-					idc,ntavolo);
+					"INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (%d,%d);",
+					ntavolo,idc);
 			db.executeUpdate(query);
 			response.status(201);
 			Ordine o = new Ordine(ntavolo, idc, 0);
@@ -144,8 +144,8 @@ public class ServerRest {
 		});
 		
 		// POST - inserisce scontrino da view di appoggio e lo mostra
-		post("/scontrino/add", (request, response) -> {
-			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+		post("/scontrino/add/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query = String.format(
 					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
 					+ "SELECT ntavolo, idcameriere, sum(tot_parz)"
@@ -171,7 +171,7 @@ public class ServerRest {
 		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
 		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo"
 		delete("/ordine/delete/:ntavolo", (request, response) -> {
-			int ntavolo = Integer.parseInt(request.params("ntavolo"));
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query;
 
 			query = String.format("SELECT * FROM ordine_corrente WHERE ntavolo = %d;",ntavolo);
@@ -221,7 +221,7 @@ public class ServerRest {
 			return om.writeValueAsString(giacenza);
 		});
 		
-		// PUT - update prodotto, dimuisco di uno la giacenza
+		// PUT - update prodotto, dimuisco la giacenza in base alla quantità
 		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp?quantita=(quantità di prodotto richiesta)"
 		put("/prodotto/updategiacenza/:idp", (request, response) -> {
 			int idp = Integer.parseInt(request.params(":idp"));
@@ -239,7 +239,7 @@ public class ServerRest {
 		
 		// PUT - update ordine_corrente, mette a 1 flag pronto (prendendo numero del tavolo) (CUCINA)
 		// "http://sbaccioserver.ddns.net:8081/prodotto/updatepronto/:ntavolo
-		put("/prodotto/updategiacenza/:ntavolo", (request, response) -> {
+		put("/ordine/updatepronto/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 
 			String query;
@@ -250,6 +250,7 @@ public class ServerRest {
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
 		});			
+		
 /*FINITO QUI*/
 	}
 
