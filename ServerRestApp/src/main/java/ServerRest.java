@@ -89,7 +89,6 @@ public class ServerRest {
 			Ordine o = new Ordine(ntavolo, idc, 0);
 			return om.writeValueAsString(o);
 		});
-				
 		
 /*INIZIATO DA QUI*/		
 		// GET - mostra prodotti in base al tipo passato
@@ -143,24 +142,6 @@ public class ServerRest {
 			}
 			return om.writeValueAsString(o);
 		});
-		
-		/*// GET - (chiamato dopo click di chiusura ordine) mostra l'ordine legato ad un tavolo (che sarà poi da cancellare e droppare)
-		// "http://sbaccioserver.ddns.net:8081/ordine_corrente/numerotavolo
-		get("/ordine_corrente/:ntavolo", (request, response) -> {
-			int ntavolo = Integer.parseInt(request.params("ntavolo"));
-			String query;
-
-			query = String.format("SELECT * FROM ordine_corrente "
-					+ "WHERE ntavolo = %d;",ntavolo);
-			ResultSet rs = db.executeQuery(query);
-			if (rs.next() == false) {
-				response.status(404);
-				return om.writeValueAsString("{status: failed}");
-			}
-			Ordine o = new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
-					rs.getInt("pronto"));
-			return om.writeValueAsString(o);
-		});*/
 		
 		// POST - inserisce scontrino da view di appoggio e lo mostra
 		post("/scontrino/add", (request, response) -> {
@@ -253,16 +234,26 @@ public class ServerRest {
 					+ "WHERE idp = %d;", quantita, idp);	
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
-
+			
 		});
+		
+		// PUT - update ordine_corrente, mette a 1 flag pronto (prendendo numero del tavolo) (CUCINA)
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updatepronto/:ntavolo
+		put("/prodotto/updategiacenza/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 
-				
+			String query;
+
+			query = String.format(
+					"UPDATE ordine_corrente SET pronto = 1"
+							+ "WHERE ntavolo = %d;", ntavolo);	
+			db.executeUpdate(query);
+			return om.writeValueAsString("ok");
+		});			
 /*FINITO QUI*/
-
 	}
 
 	public static void main(String[] args) {
 		new ServerRest().run();
-		
 	}
 }
