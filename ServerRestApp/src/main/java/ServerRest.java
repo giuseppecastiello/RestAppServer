@@ -46,7 +46,7 @@ public class ServerRest {
 		// GET - mostra tutti i prodotti
 		get("/prodotto/all", (request, response) -> {
 			String query;
-			query = String.format("SELECT * FROM prodotto");
+			query = String.format("SELECT * FROM prodotto;");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Prodotto> l = new ArrayList<Prodotto>();
@@ -117,7 +117,7 @@ public class ServerRest {
 		get("/ordine_aperto", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM ordine_corrente");
+			query = String.format("SELECT * FROM ordine_corrente;");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
@@ -133,7 +133,7 @@ public class ServerRest {
 		get("/ordine_in_preparazione", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM ordine_corrente WHERE pronto = 0");
+			query = String.format("SELECT * FROM ordine_corrente WHERE pronto = 0;");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
@@ -168,7 +168,7 @@ public class ServerRest {
 			String query = String.format(
 					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
 					+ "SELECT ntavolo, idcameriere, sum(tot_parz)"
-					+ "FROM totali_parziali WHERE ntavolo = %d", ntavolo);			
+					+ "FROM totali_parziali WHERE ntavolo = %d;", ntavolo);			
 			db.executeUpdate(query);
 			response.status(201);
 			
@@ -176,7 +176,7 @@ public class ServerRest {
 					"SELECT *"
 					+ "FROM scontrino WHERE ntavolo = %d"
 					+ "ORDER BY datachiusura DESC"
-					+ "LIMIT 1", ntavolo);	
+					+ "LIMIT 1;", ntavolo);	
 			ResultSet rs = db.executeQuery(query);
 			if (rs.next() == false) {
 				response.status(404);
@@ -210,7 +210,7 @@ public class ServerRest {
 		get("/scontrino/all", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM scontrino");
+			query = String.format("SELECT * FROM scontrino;");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Scontrino> s = new ArrayList<Scontrino>();
@@ -244,13 +244,13 @@ public class ServerRest {
 		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp?quantita=(quantità di prodotto richiesta)"
 		put("/prodotto/updategiacenza/:idp", (request, response) -> {
 			int idp = Integer.parseInt(request.params(":idp"));
-			double quantita = Double.parseDouble(request.queryParams("quantita"));
+			int quantita = Integer.parseInt(request.queryParams("quantita"));
 		
 			String query;
 			
 			query = String.format(
 					"UPDATE prodotto SET giacenza = giacenza - %d "
-					+ "WHERE idp = %d", quantita, idp);	
+					+ "WHERE idp = %d;", quantita, idp);	
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
 
