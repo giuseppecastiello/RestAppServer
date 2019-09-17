@@ -2,6 +2,8 @@ import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.port;
 import static spark.Spark.post;
+import static spark.Spark.put;
+
 /*
 import static spark.Spark.put;
 import static spark.Spark.delete;
@@ -186,7 +188,7 @@ public class ServerRest {
 		});
 		
 		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
-		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo
+		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo"
 		delete("/ordine/delete/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params("ntavolo"));
 			String query;
@@ -198,7 +200,7 @@ public class ServerRest {
 				return om.writeValueAsString("{status: failed}");
 			}
 
-			query = String.format("DELETE FROM ordine_corrente WHERE ntavolo = '%d'", ntavolo);
+			query = String.format("DELETE FROM ordine_corrente WHERE ntavolo = %d", ntavolo);
 			db.executeUpdate(query);
 			return om.writeValueAsString("{status: ok}");
 		});
@@ -219,6 +221,41 @@ public class ServerRest {
 			return om.writeValueAsString(s);
 		});
 		
+		// GET - controlla giacenza prodotto aggiunto dal cameriere
+		// "http://sbaccioserver.ddns.net:8081/prodotto/giacenza/idp"
+		get("/prodotto/giacenza/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			String query;
+
+			query = String.format("SELECT giacenza FROM prodotto "
+					+ "WHERE idp = %d;",idp);
+			ResultSet rs = db.executeQuery(query);
+
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+			
+			int giacenza = rs.getInt("giacenza");
+			return om.writeValueAsString(giacenza);
+		});
+		
+		// PUT - update prodotto, dimuisco di uno la giacenza
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp?quantita=(quantità di prodotto richiesta)"
+		put("/prodotto/updategiacenza/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			double quantita = Double.parseDouble(request.queryParams("quantita"));
+		
+			String query;
+			
+			query = String.format(
+					"UPDATE prodotto SET giacenza = giacenza - %d "
+					+ "WHERE idp = %d", quantita, idp);	
+			db.executeUpdate(query);
+			return om.writeValueAsString("ok");
+
+		});
+
 				
 /*FINITO QUI*/
 
