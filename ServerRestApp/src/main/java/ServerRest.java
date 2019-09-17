@@ -169,7 +169,7 @@ public class ServerRest {
 		});
 		
 		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
-		// "http://sbaccioserver.ddns.net:8081/drop_ordine/numerotavolo"
+		// "http://sbaccioserver.ddns.net:8081/ordine/delete/:numerotavolo"
 		delete("/ordine/delete/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query;
@@ -249,7 +249,42 @@ public class ServerRest {
 							+ "WHERE ntavolo = %d;", ntavolo);	
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
-		});			
+		});		
+		
+		// DELETE - delete di un prodotto dato l'id
+		// "http://sbaccioserver.ddns.net:8081/prodotto/delete/:idp"
+		delete("/ordine/delete/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			String query;
+
+			query = String.format("SELECT * FROM prodotto WHERE idp = %d;",idp);
+			ResultSet rs = db.executeQuery(query);
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+
+			query = String.format("DELETE FROM prodotto WHERE idp = %d", idp);
+			db.executeUpdate(query);
+			return om.writeValueAsString("{status: ok}");
+		});
+		
+		// POST - inserisce prodotto dentro ordine dato id prodotto e numero del tavolo
+		// "http://sbaccioserver.ddns.net:8081/contiene/add?ntavolo=..&idp=..&quantita=.."
+		post("/contiene/add", (request, response) -> {
+			
+			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+			int idp = Integer.parseInt(request.queryParams("idp"));
+			int quantita = Integer.parseInt(request.queryParams("quantita"));
+			
+			String query = String.format(
+					"INSERT INTO contiene (ntavolo,idp,quantita) VALUES (%d,%d,%d);",
+					ntavolo,idp, quantita);
+			db.executeUpdate(query);
+			
+			response.status(201);
+			return om.writeValueAsString("ok");
+		});
 		
 /*FINITO QUI*/
 	}
