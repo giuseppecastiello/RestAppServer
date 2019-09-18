@@ -250,7 +250,7 @@ public class ServerRest {
 
 			query = String.format(
 					"UPDATE contiene SET pronto = 1"
-							+ "WHERE ntavolo = %d AND idp = %d;", ntavolo, idp);	
+							+ " WHERE ntavolo = %d AND idp = %d;", ntavolo, idp);	
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
 		});		
