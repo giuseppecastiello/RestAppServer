@@ -121,8 +121,7 @@ public class ServerRest {
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
-				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
-						rs.getInt("pronto")));
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere")));
 			}
 			return om.writeValueAsString(o);
 		});
@@ -134,16 +133,15 @@ public class ServerRest {
 
 			query = String.format("SELECT * FROM ordine_corrente o"
 								+ " WHERE exists ("
-								+ "				select * "
-								+ "				from contiene c"
-								+ "				where pronto = 0"
-								+ "				and o.ntavolo = c.ntavolo);");
+												+ " select *"
+												+ " from contiene c"
+												+ " where pronto = 0"
+												+ " and o.ntavolo = c.ntavolo);");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
 			while (rs.next()) {
-				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
-						rs.getInt("pronto")));
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere")));
 			}
 			return om.writeValueAsString(o);
 		});

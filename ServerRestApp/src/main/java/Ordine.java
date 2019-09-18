@@ -1,14 +1,11 @@
 public class Ordine {
 	int ntavolo;
 	int idcameriere;
-	int pronto;
-	
 
-	public Ordine(int ntavolo, int idcameriere, int pronto) {
+	public Ordine(int ntavolo, int idcameriere) {
 		super();
 		this.idcameriere = idcameriere;
 		this.ntavolo = ntavolo;
-		this.pronto = pronto;
 		
 	}
 	
@@ -28,18 +25,9 @@ public class Ordine {
 		this.ntavolo = ntavolo;
 	}
 
-	public int isPronto() {
-		return pronto;
-	}
-
-	public void setPronto(int pronto) {
-		this.pronto = pronto;
-	}
-
 	@Override
 	public String toString() {
-		return "Ordine [ntavolo=" + ntavolo + ", idcameriere=" + idcameriere + ", pronto=" + pronto + "]";
+		return "Ordine [ntavolo=" + ntavolo + ", idcameriere=" + idcameriere + "]";
 	}
 
-	
 }
