@@ -113,8 +113,8 @@ public class ServerRest {
 		});
 
 		// GET - mostra tutti gli ordini aperti (PER SALA)
-		// "http://sbaccioserver.ddns.net:8081/ordine_aperto"
-		get("/ordine_aperto", (request, response) -> {
+		// "http://sbaccioserver.ddns.net:8081/ordine_corrente"
+		get("/ordine_corrente", (request, response) -> {
 			String query;
 
 			query = String.format("SELECT * FROM ordine_corrente;");
@@ -241,7 +241,7 @@ public class ServerRest {
 			
 		});
 		
-//cambiato	// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
+		// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
 		// "http://sbaccioserver.ddns.net:8081/contiene/updatepronto/:ntavolo/:idp
 		put("/contiene/updatepronto/:ntavolo/:idp", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
