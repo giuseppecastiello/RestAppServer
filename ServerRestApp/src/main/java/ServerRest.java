@@ -315,7 +315,7 @@ public class ServerRest {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query;
 
-			query = String.format("SELECT c.quantita * FROM contiene c "
+			query = String.format("SELECT c.quantita FROM contiene c "
 					+ "JOIN prodotto p ON c.idp = p.idp "
 					+ "WHERE c.ntavolo = %d;",ntavolo);
 			ResultSet rs = db.executeQuery(query);
