@@ -319,14 +319,17 @@ public class ServerRest {
 					+ "JOIN prodotto p ON c.idp = p.idp "
 					+ "WHERE c.ntavolo = %d;",ntavolo);
 			ResultSet rs = db.executeQuery(query);
-
-			if (rs.next() == false) {
+/*
+			if (rs.next() == false) {					PERCHE??------------------------------------------
 				response.status(404);
 				return om.writeValueAsString("{status: failed}");
 			}
-			
-			int quantita = rs.getInt("quantita");
-			return om.writeValueAsString(quantita);
+			int quantita = rs.getInt("quantita");*/
+			ArrayList<Integer> q = new ArrayList<Integer>();
+			while (rs.next()) {
+				q.add(new Integer(rs.getInt("quantita")));
+			}
+			return om.writeValueAsString(q);
 		});
 		
 /*FINITO QUI*/
