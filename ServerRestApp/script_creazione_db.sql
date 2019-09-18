@@ -13,14 +13,14 @@ tipo VARCHAR(20) NOT NULL /* Antipasto, Primo piatto, Secondo piatto, Dolce */
 
 CREATE TABLE ordine_corrente(
 ntavolo INT PRIMARY KEY,
-idcameriere INT,
-pronto BIT DEFAULT 0 NOT NULL /* 1 = è pronto in cucina */
+idcameriere INT
 );
 
 CREATE TABLE contiene(
 ntavolo INT,
 idp INT,
 quantita INT NOT NULL,
+pronto BIT DEFAULT 0 NOT NULL, /* 1 = è pronto in cucina */
 PRIMARY KEY (ntavolo,idp),
 FOREIGN KEY (ntavolo) REFERENCES ordine_corrente(ntavolo) ON UPDATE CASCADE ON DELETE CASCADE,
 FOREIGN KEY (idp) REFERENCES prodotto(idp) ON UPDATE CASCADE ON DELETE CASCADE
@@ -76,21 +76,21 @@ INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (1,1);
 INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (2,1); 
 INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (3,2); 
 
-INSERT INTO contiene VALUES (1,1,2);
-INSERT INTO contiene VALUES (1,2,2);
-INSERT INTO contiene VALUES (1,3,1);
-INSERT INTO contiene VALUES (1,20,1);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (1,1,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (1,2,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (1,3,1);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (1,20,1);
 /*DOBBIAMO MODIFICARE LA GIACENZA SOTTRAENDO LA QUANTITA CHE E' STATA UTILIZZATA DALLA CUCINA*/
 
-INSERT INTO contiene VALUES (2,3,2);
-INSERT INTO contiene VALUES (2,5,1);
-INSERT INTO contiene VALUES (2,18,1);
-INSERT INTO contiene VALUES (2,7,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (2,3,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (2,5,1);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (2,18,1);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (2,7,2);
 
-INSERT INTO contiene VALUES (3,7,2);
-INSERT INTO contiene VALUES (3,2,2);
-INSERT INTO contiene VALUES (3,15,2);
-INSERT INTO contiene VALUES (3,19,1);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (3,7,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (3,2,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (3,15,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (3,19,1);
 
 /*GENERO LO SCONTRINO ANDANDO A VEDERE I PRODOTTI CHE CONTENEVA L'ORDINE CORRENTE*/
 CREATE VIEW totali_parziali as
@@ -100,14 +100,14 @@ join prodotto p on p.idp=c.idp;
 
 /*
 INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (4,2); 
-INSERT INTO contiene VALUES (4,1,2);
+INSERT INTO contiene (ntavolo,idp,quantita) VALUES (4,1,2);
 
 SELECT *
 FROM totali_parziali;
 */
 
 INSERT INTO scontrino (ntavolo,idcameriere,tot) 
-select ntavolo,idcameriere, sum(tot_parz)
+select ntavolo, idcameriere, sum(tot_parz)
 from totali_parziali
 group by ntavolo;/*where ntavolo=ntavolo;*/
 
@@ -130,26 +130,4 @@ join prodotto p on p.idp=c.idp;
 select *
 from scontrino s join ha_contenuto h on s.ntavolo=h.ntavolo
 join prodotto p on p.idp=h.idp;
-
-SELECT *
-FROM scontrino
-WHERE ntavolo = 3
-ORDER BY datachiusura DESC
-LIMIT 1;
-
-select *
-from totali_parziali;
-
-select ido, sum(tot_parz)
-from totali_parziali;
-
-select *
-from scontrino;
-
-delete from prodotto
-where idp=1 or idp=2 or idp=3;
-
-select *
-from prodotto;
-
 */

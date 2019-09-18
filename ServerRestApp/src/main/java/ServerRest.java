@@ -127,12 +127,17 @@ public class ServerRest {
 			return om.writeValueAsString(o);
 		});
 
-		// GET - mostra tutti gli ordini aperti che non sono pronti(pronto = 0) (PER CUCINA)
+//Cambiata		// GET - mostra tutti gli ordini aperti che non sono pronti(pronto = 0) (PER CUCINA)
 		// "http://sbaccioserver.ddns.net:8081/ordine_in_preparazione"
 		get("/ordine_in_preparazione", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM ordine_corrente WHERE pronto = 0;");
+			query = String.format("SELECT * FROM ordine_corrente o"
+								+ " WHERE exists ("
+								+ "				select * "
+								+ "				from contiene c"
+								+ "				where pronto = 0"
+								+ "				and o.ntavolo = c.ntavolo);");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Ordine> o = new ArrayList<Ordine>();
@@ -237,16 +242,16 @@ public class ServerRest {
 			
 		});
 		
-		// PUT - update ordine_corrente, mette a 1 flag pronto (prendendo numero del tavolo) (CUCINA)
-		// "http://sbaccioserver.ddns.net:8081/prodotto/updatepronto/:ntavolo
-		put("/ordine/updatepronto/:ntavolo", (request, response) -> {
+//cambiato	// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updatepronto/:ntavolo/:idp
+		put("/ordine/updatepronto/:ntavolo/:idp", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
-
+			int idp = Integer.parseInt(request.params(":idp"));
 			String query;
 
 			query = String.format(
-					"UPDATE ordine_corrente SET pronto = 1"
-							+ "WHERE ntavolo = %d;", ntavolo);	
+					"UPDATE contiene SET pronto = 1"
+							+ "WHERE ntavolo = %d AND idp = %d;", ntavolo, idp);	
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
 		});		
