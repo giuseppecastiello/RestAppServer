@@ -87,6 +87,7 @@ public class ServerRest {
 			db.executeUpdate(query);
 			response.status(201);
 			Ordine o = new Ordine(ntavolo, idc);
+					
 			return om.writeValueAsString(o);
 		});
 		
@@ -241,8 +242,8 @@ public class ServerRest {
 		});
 		
 //cambiato	// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
-		// "http://sbaccioserver.ddns.net:8081/prodotto/updatepronto/:ntavolo/:idp
-		put("/ordine/updatepronto/:ntavolo/:idp", (request, response) -> {
+		// "http://sbaccioserver.ddns.net:8081/contiene/updatepronto/:ntavolo/:idp
+		put("/contiene/updatepronto/:ntavolo/:idp", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			int idp = Integer.parseInt(request.params(":idp"));
 			String query;
