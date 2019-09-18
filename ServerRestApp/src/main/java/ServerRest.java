@@ -86,7 +86,7 @@ public class ServerRest {
 					ntavolo,idc);
 			db.executeUpdate(query);
 			response.status(201);
-			Ordine o = new Ordine(ntavolo, idc, 0);
+			Ordine o = new Ordine(ntavolo, idc);
 			return om.writeValueAsString(o);
 		});
 		
