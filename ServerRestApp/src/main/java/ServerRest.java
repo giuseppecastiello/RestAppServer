@@ -334,7 +334,7 @@ public class ServerRest {
 		
 		// GET - mostra tutti i nomi dei prodotti
 		//"http://sbaccioserver.ddns.net:8081/prodotto/nome"
-		get("/prodotto/nome", (request, response) -> {
+		get("/prodott/nome", (request, response) -> {
 			String query;
 			query = String.format("SELECT nome FROM prodotto;");
 			ResultSet rs = db.executeQuery(query);
@@ -348,7 +348,7 @@ public class ServerRest {
 		
 		// GET - mostra giacenza dei prodotti
 		//"http://sbaccioserver.ddns.net:8081/prodotto/giacenza"
-		get("/prodotto/giacenza", (request, response) -> {
+		get("/prodott/giacenza", (request, response) -> {
 			String query;
 			query = String.format("SELECT giacenza FROM prodotto;");
 			ResultSet rs = db.executeQuery(query);
