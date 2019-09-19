@@ -257,7 +257,7 @@ public class ServerRest {
 		
 		// DELETE - delete di un prodotto dato l'id
 		// "http://sbaccioserver.ddns.net:8081/prodotto/delete/:idp"
-		delete("/ordine/delete/:idp", (request, response) -> {
+		delete("/prodotto/delete/:idp", (request, response) -> {
 			int idp = Integer.parseInt(request.params(":idp"));
 			String query;
 
