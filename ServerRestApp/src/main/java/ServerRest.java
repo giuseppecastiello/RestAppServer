@@ -332,6 +332,34 @@ public class ServerRest {
 			return om.writeValueAsString(q);
 		});
 		
+		// GET - mostra tutti i nomi dei prodotti
+		//"http://sbaccioserver.ddns.net:8081/prodotto/nome"
+		get("/prodotto/nome", (request, response) -> {
+			String query;
+			query = String.format("SELECT nome FROM prodotto;");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<String> l = new ArrayList<String>();
+			while (rs.next()) {
+				l.add(new String(rs.getString("nome")));
+			}
+			return om.writeValueAsString(l); 
+		});
+		
+		// GET - mostra giacenza dei prodotti
+		//"http://sbaccioserver.ddns.net:8081/prodotto/giacenza"
+		get("/prodotto/giacenza", (request, response) -> {
+			String query;
+			query = String.format("SELECT giacenza FROM prodotto;");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Integer> l = new ArrayList<Integer>();
+			while (rs.next()) {
+				l.add(new Integer(rs.getInt("giacenza")));
+			}
+			return om.writeValueAsString(l); 
+		});
+
 /*FINITO QUI*/
 	}
 
