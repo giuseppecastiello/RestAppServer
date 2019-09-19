@@ -227,7 +227,7 @@ public class ServerRest {
 		
 		// PUT - update prodotto, dimuisco la giacenza in base alla quantità
 		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp?quantita=(quantità di prodotto richiesta)"
-		put("/prodotto/updategiacenza/:idp", (request, response) -> {
+		/*put("/prodotto/updategiacenza/:idp", (request, response) -> {
 			int idp = Integer.parseInt(request.params(":idp"));
 			int quantita = Integer.parseInt(request.queryParams("quantita"));
 		
@@ -239,7 +239,7 @@ public class ServerRest {
 			db.executeUpdate(query);
 			return om.writeValueAsString("ok");
 			
-		});
+		});*/
 		
 		// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
 		// "http://sbaccioserver.ddns.net:8081/contiene/updatepronto/:ntavolo/:idp
@@ -332,6 +332,21 @@ public class ServerRest {
 			return om.writeValueAsString(q);
 		});
 		
+		// PUT - update prodotto, dimuisco la giacenza in base alla quantità
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp/giacenza"
+		put("/prodotto/updategiacenza/:idp/:giacenza", (request, response) -> {
+					int idp = Integer.parseInt(request.params(":idp"));
+					int giacenza = Integer.parseInt(request.params(":giacenza"));
+
+					String query;
+
+					query = String.format(
+							"UPDATE prodotto SET giacenza = %d "
+							+ "WHERE idp = %d;", giacenza, idp);	
+					db.executeUpdate(query);
+					return om.writeValueAsString("ok");
+
+				});
 		
 
 /*FINITO QUI*/
