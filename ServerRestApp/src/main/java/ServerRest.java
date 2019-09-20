@@ -161,15 +161,15 @@ public class ServerRest {
 		});
 		
 		// GET - mostra scontrino dato numero del tavolo
-		// "http://sbaccioserver.ddns.net:8081/scontrino/all"
+		// "http://sbaccioserver.ddns.net:8081/scontrino/one/ntavolo"
 		get("/scontrino/one/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query;
 
 			query = String.format(
-					"SELECT *"
-					+ "FROM scontrino WHERE ntavolo = %d"
-					+ "ORDER BY datachiusura DESC"
+					"SELECT * "
+					+ "FROM scontrino WHERE ntavolo = %d "
+					+ "ORDER BY datachiusura DESC "
 					+ "LIMIT 1;", ntavolo);	
 			ResultSet rs = db.executeQuery(query);
 			if (rs.next() == false) {
