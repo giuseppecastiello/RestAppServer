@@ -162,7 +162,7 @@ public class ServerRest {
 		
 		// GET - mostra scontrino dato numero del tavolo
 		// "http://sbaccioserver.ddns.net:8081/scontrino/all"
-		get("/scontrino/:ntavolo", (request, response) -> {
+		get("/scontrino/one/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query;
 
