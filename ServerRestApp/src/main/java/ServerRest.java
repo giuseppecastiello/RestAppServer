@@ -147,7 +147,7 @@ public class ServerRest {
 			return om.writeValueAsString(o);
 		});
 		
-		// POST - inserisce scontrino da view di appoggio e lo mostra
+		// POST - inserisce scontrino da view di appoggio dato numero tavolo
 		post("/scontrino/add/:ntavolo", (request, response) -> {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query = String.format(
@@ -157,6 +157,15 @@ public class ServerRest {
 			db.executeUpdate(query);
 			response.status(201);
 			
+			return om.writeValueAsString("ok");
+		});
+		
+		// GET - mostra scontrino dato numero del tavolo
+		// "http://sbaccioserver.ddns.net:8081/scontrino/all"
+		get("/scontrino/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
 			query = String.format(
 					"SELECT *"
 					+ "FROM scontrino WHERE ntavolo = %d"
