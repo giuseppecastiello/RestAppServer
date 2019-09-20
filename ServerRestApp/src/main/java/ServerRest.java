@@ -309,6 +309,45 @@ public class ServerRest {
 			return om.writeValueAsString(p);
 		});
 		
+		// GET - mostra ordine in preparazione dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine_preparazione/prodotto/ntavolo"
+		get("/mostra_ordine_preparazione/prodotto/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT p.* FROM contiene c "
+					+ "JOIN prodotto p ON c.idp = p.idp "
+					+ "WHERE c.ntavolo = %d AND c.pronto = 0;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Prodotto> p = new ArrayList<Prodotto>();
+			while (rs.next()) {
+				p.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+			}
+			return om.writeValueAsString(p);
+		});
+		
+		// GET - mostra quantità ordine in preparazione dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine_preparazione/quantita/ntavolo"
+		get("/mostra_ordine_preparazione/quantita/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT c.quantita FROM contiene c "
+					+ "JOIN prodotto p ON c.idp = p.idp "
+					+ "WHERE c.ntavolo = %d AND pronto = 0;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Integer> q = new ArrayList<Integer>();
+			while (rs.next()) {
+				q.add(new Integer(rs.getInt("quantita")));
+			}
+			return om.writeValueAsString(q);
+		});
+		
+		
+
 		// GET - mostra quantità ordine dato ntavolo
 		// "http://sbaccioserver.ddns.net:8081/mostra_ordine/quantita/ntavolo"
 		get("/mostra_ordine/quantita/:ntavolo", (request, response) -> {
@@ -319,12 +358,7 @@ public class ServerRest {
 					+ "JOIN prodotto p ON c.idp = p.idp "
 					+ "WHERE c.ntavolo = %d;",ntavolo);
 			ResultSet rs = db.executeQuery(query);
-/*
-			if (rs.next() == false) {					PERCHE??------------------------------------------
-				response.status(404);
-				return om.writeValueAsString("{status: failed}");
-			}
-			int quantita = rs.getInt("quantita");*/
+
 			ArrayList<Integer> q = new ArrayList<Integer>();
 			while (rs.next()) {
 				q.add(new Integer(rs.getInt("quantita")));
