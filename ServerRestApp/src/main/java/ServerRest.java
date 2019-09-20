@@ -204,7 +204,7 @@ public class ServerRest {
 		get("/scontrino/all", (request, response) -> {
 			String query;
 
-			query = String.format("SELECT * FROM scontrino;");
+			query = String.format("SELECT * FROM scontrino ORDER BY datachiusura;");
 			ResultSet rs = db.executeQuery(query);
 
 			ArrayList<Scontrino> s = new ArrayList<Scontrino>();
