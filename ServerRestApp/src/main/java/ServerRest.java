@@ -152,7 +152,7 @@ public class ServerRest {
 			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
 			String query = String.format(
 					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
-					+ "SELECT ntavolo, idcameriere, sum(tot_parz)"
+					+ "SELECT ntavolo, idcameriere, sum(tot_parz) "
 					+ "FROM totali_parziali WHERE ntavolo = %d;", ntavolo);			
 			db.executeUpdate(query);
 			response.status(201);
