@@ -101,7 +101,6 @@ join prodotto p on p.idp=c.idp;
 /*
 INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (4,2); 
 INSERT INTO contiene (ntavolo,idp,quantita) VALUES (4,1,2);
-
 SELECT *
 FROM totali_parziali;
 */
@@ -126,7 +125,6 @@ WHERE ntavolo<1000;
 select *
 from ordine_corrente o join contiene c on o.ntavolo=c.ntavolo
 join prodotto p on p.idp=c.idp;
-
 select *
 from scontrino s join ha_contenuto h on s.ntavolo=h.ntavolo
 join prodotto p on p.idp=h.idp;

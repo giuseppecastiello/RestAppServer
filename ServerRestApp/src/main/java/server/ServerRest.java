@@ -1,0 +1,444 @@
+package server;
+import static spark.Spark.delete;
+import static spark.Spark.get;
+import static spark.Spark.port;
+import static spark.Spark.post;
+import static spark.Spark.put;
+
+/*
+import static spark.Spark.put;
+import static spark.Spark.delete;
+*/
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+public class ServerRest {
+	static Logger logger = LoggerFactory.getLogger(ServerRest.class);
+	ObjectMapper om = new ObjectMapper();
+	DBManager db;
+
+	public void dbConnection() {
+		try {
+			db = new DBManager(DBManager.JDBCDriver, DBManager.JDBCURL);
+			db.executeQuery("SELECT * FROM prodotto LIMIT 1");
+		} catch (ClassNotFoundException e) {
+			System.out.println("Missign lib...");
+			throw new RuntimeException();
+		} catch (SQLException e) {
+			System.out.println("Errore collegamento db");
+			}
+	}
+	 
+	public void run() {
+		dbConnection();
+
+		port(8081);
+
+		get("/", (request, response) -> {
+			return "SERVER ONLINE";
+		});
+		
+		// GET - mostra tutti i prodotti
+		get("/prodotto/all", (request, response) -> {
+			String query;
+			query = String.format("SELECT * FROM prodotto;");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Prodotto> l = new ArrayList<Prodotto>();
+			while (rs.next()) {
+				l.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+			}
+			return om.writeValueAsString(l); 
+		});
+		
+		// POST - inserisce nuovo prodotto 
+		post("/prodotto/add", (request, response) -> {
+			/*int idp = Integer.parseInt(request.queryParams("idp"));  Chiedi ad Andre se e' necessario */
+			String nome = request.queryParams("nome");
+			int giacenza = Integer.parseInt(request.queryParams("giacenza"));
+			String prezzoString = request.queryParams("prezzo");
+			Double prezzo = Double.parseDouble(prezzoString);
+			String tipo = request.queryParams("tipo");
+			Prodotto p = new Prodotto(0, nome, giacenza, prezzo, tipo);
+			//System.out.println(p.toString());    
+			String query = String.format(
+					"INSERT INTO prodotto (nome,giacenza,prezzo,tipo) VALUES ('%s',%d,%s,'%s');",
+					nome, giacenza, prezzoString, tipo);
+			//System.out.println(query);
+			db.executeUpdate(query);
+			response.status(201);
+			return om.writeValueAsString(p);
+		});
+		
+		// POST - inserisce nuovo ordine
+		post("/ordine/add", (request, response) -> {
+			int idc = Integer.parseInt(request.queryParams("idcameriere"));
+			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+			//int pronto = Integer.parseInt(request.queryParams("pronto"));
+			String query = String.format(
+					"INSERT INTO ordine_corrente (ntavolo,idcameriere) VALUES (%d,%d);",
+					ntavolo,idc);
+			db.executeUpdate(query);
+			response.status(201);
+			Ordine o = new Ordine(ntavolo, idc);
+					
+			return om.writeValueAsString(o);
+		});
+		
+/*INIZIATO DA QUI*/		
+		// GET - mostra prodotti in base al tipo passato
+		// "http://sbaccioserver.ddns.net:8081/prodotto/tipo"
+		get("/prodotto/:tipo", (request, response) -> {
+			String tipo = request.params(":tipo");
+			String query;
+
+			query = String.format("SELECT * FROM prodotto "
+					+ "WHERE TIPO = '%s';",tipo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Prodotto> p = new ArrayList<Prodotto>();
+			while (rs.next()) {
+				p.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+			}
+			/*Prodotto p = new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo"));*/
+			return om.writeValueAsString(p);
+		});
+
+		// GET - mostra tutti gli ordini aperti (PER SALA)
+		// "http://sbaccioserver.ddns.net:8081/ordine_corrente"
+		get("/ordine_corrente", (request, response) -> {
+			String query;
+
+			query = String.format("SELECT * FROM ordine_corrente;");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Ordine> o = new ArrayList<Ordine>();
+			while (rs.next()) {
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere")));
+			}
+			return om.writeValueAsString(o);
+		});
+
+//Cambiata		// GET - mostra tutti gli ordini aperti che non sono pronti(pronto = 0) (PER CUCINA)
+		// "http://sbaccioserver.ddns.net:8081/ordine_in_preparazione"
+		get("/ordine_in_preparazione", (request, response) -> {
+			String query;
+
+			query = String.format("SELECT * FROM ordine_corrente o"
+								+ " WHERE exists ("
+												+ " select *"
+												+ " from contiene c"
+												+ " where pronto = 0"
+												+ " and o.ntavolo = c.ntavolo);");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Ordine> o = new ArrayList<Ordine>();
+			while (rs.next()) {
+				o.add(new Ordine(rs.getInt("ntavolo"), rs.getInt("idcameriere")));
+			}
+			return om.writeValueAsString(o);
+		});
+		
+		// POST - inserisce scontrino da view di appoggio dato numero tavolo
+		post("/scontrino/add/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query = String.format(
+					"INSERT INTO scontrino (ntavolo,idcameriere, tot) "
+					+ "SELECT ntavolo, idcameriere, sum(tot_parz) "
+					+ "FROM totali_parziali WHERE ntavolo = %d;", ntavolo);			
+			db.executeUpdate(query);
+			response.status(201);
+			
+			return om.writeValueAsString("ok");
+		});
+		
+		// GET - mostra scontrino dato numero del tavolo
+		// "http://sbaccioserver.ddns.net:8081/scontrino/one/ntavolo"
+		get("/scontrino/one/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format(
+					"SELECT * "
+					+ "FROM scontrino WHERE ntavolo = %d "
+					+ "ORDER BY datachiusura DESC "
+					+ "LIMIT 1;", ntavolo);	
+			ResultSet rs = db.executeQuery(query);
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+			Scontrino s = new Scontrino (rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+					rs.getString("datachiusura"), rs.getDouble("tot")); 
+			return om.writeValueAsString(s);
+		});
+		
+		// DELETE - drop da db dell'ordine legato al tavolo per cui bisogna fare scontrino
+		// "http://sbaccioserver.ddns.net:8081/ordine/delete/:numerotavolo"
+		delete("/ordine/delete/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT * FROM ordine_corrente WHERE ntavolo = %d;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+
+			query = String.format("DELETE FROM ordine_corrente WHERE ntavolo = %d", ntavolo);
+			db.executeUpdate(query);
+			return om.writeValueAsString("{status: ok}");
+		});
+
+		// GET - mostra tutti gli scontrini
+		// "http://sbaccioserver.ddns.net:8081/scontrino/all"
+		get("/scontrino/all", (request, response) -> {
+			String query;
+
+			query = String.format("SELECT * FROM scontrino ORDER BY datachiusura;");
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Scontrino> s = new ArrayList<Scontrino>();
+			while (rs.next()) {
+				s.add(new Scontrino(rs.getInt("ntavolo"), rs.getInt("idcameriere"),
+						rs.getString("datachiusura"), rs.getDouble("tot")));
+			}
+			return om.writeValueAsString(s);
+		});
+		
+		// GET - controlla giacenza prodotto aggiunto dal cameriere
+		// "http://sbaccioserver.ddns.net:8081/prodotto/giacenza/idp"
+		get("/prodotto/giacenza/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			String query;
+
+			query = String.format("SELECT giacenza FROM prodotto "
+					+ "WHERE idp = %d;",idp);
+			ResultSet rs = db.executeQuery(query);
+
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+			
+			int giacenza = rs.getInt("giacenza");
+			return om.writeValueAsString(giacenza);
+		});
+		
+		// PUT - update prodotto, dimuisco la giacenza in base alla quantità
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp?quantita=(quantità di prodotto richiesta)"
+		/*put("/prodotto/updategiacenza/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			int quantita = Integer.parseInt(request.queryParams("quantita"));
+		
+			String query;
+			
+			query = String.format(
+					"UPDATE prodotto SET giacenza = giacenza - %d "
+					+ "WHERE idp = %d;", quantita, idp);	
+			db.executeUpdate(query);
+			return om.writeValueAsString("ok");
+			
+		});*/
+		
+		// PUT - update contiene, mette a 1 flag pronto (prendendo numero del tavolo e id prodotto) (CUCINA)
+		// "http://sbaccioserver.ddns.net:8081/contiene/updatepronto/:ntavolo/:idp
+		put("/contiene/updatepronto/:ntavolo/:idp", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			int idp = Integer.parseInt(request.params(":idp"));
+			String query;
+
+			query = String.format(
+					"UPDATE contiene SET pronto = 1"
+							+ " WHERE ntavolo = %d AND idp = %d;", ntavolo, idp);	
+			db.executeUpdate(query);
+			return om.writeValueAsString("ok");
+		});		
+		
+		// DELETE - delete di un prodotto dato l'id
+		// "http://sbaccioserver.ddns.net:8081/prodotto/delete/:idp"
+		delete("/prodotto/delete/:idp", (request, response) -> {
+			int idp = Integer.parseInt(request.params(":idp"));
+			String query;
+
+			query = String.format("SELECT * FROM prodotto WHERE idp = %d;",idp);
+			ResultSet rs = db.executeQuery(query);
+			if (rs.next() == false) {
+				response.status(404);
+				return om.writeValueAsString("{status: failed}");
+			}
+
+			query = String.format("DELETE FROM prodotto WHERE idp = %d", idp);
+			db.executeUpdate(query);
+			return om.writeValueAsString("{status: ok}");
+		});
+		
+		// POST - inserisce prodotto dentro ordine dato id prodotto e numero del tavolo
+		// "http://sbaccioserver.ddns.net:8081/contiene/add?ntavolo=..&idp=..&quantita=.."
+		post("/contiene/add", (request, response) -> {
+			
+			int ntavolo = Integer.parseInt(request.queryParams("ntavolo"));
+			int idp = Integer.parseInt(request.queryParams("idp"));
+			int quantita = Integer.parseInt(request.queryParams("quantita"));
+			
+			String query = String.format(
+					"INSERT INTO contiene (ntavolo,idp,quantita) VALUES (%d,%d,%d);",
+					ntavolo,idp, quantita);
+			db.executeUpdate(query);
+			
+			response.status(201);
+			return om.writeValueAsString("ok");
+		});
+		
+		// GET - mostra dettaglio ordine completo dato ntavolo
+				// "http://sbaccioserver.ddns.net:8081/mostra_ordine/all/ntavolo"
+				get("/mostra_dettaglio_ordine/all/:ntavolo", (request, response) -> {
+					int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+					String query;
+
+					query = String.format("SELECT c.ntavolo,c.quantita,c.pronto,p.* "
+										+ "FROM contiene c "
+										+ "JOIN prodotto p ON c.idp = p.idp "
+										+ "WHERE c.ntavolo = %d;",ntavolo);
+					ResultSet rs = db.executeQuery(query);
+
+					ArrayList<Contiene_prodotto> l = new ArrayList<Contiene_prodotto>();
+					while (rs.next()) {
+						l.add(new Contiene_prodotto(rs.getInt("ntavolo"), rs.getInt("quantita"), rs.getInt("pronto"),
+								rs.getInt("idp"), rs.getString("nome"),
+								rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+					}
+					return om.writeValueAsString(l);
+				});
+				
+				
+				// GET - mostra ordine in preparazione completo dato ntavolo
+				// "http://sbaccioserver.ddns.net:8081/mostra_ordine/all/ntavolo"
+				get("/mostra_dettaglio_ordine/in_preparazione/:ntavolo", (request, response) -> {
+					int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+					String query;
+
+					query = String.format("SELECT c.ntavolo,c.quantita,c.pronto,p.* "
+										+ "FROM contiene c "
+										+ "JOIN prodotto p ON c.idp = p.idp "
+										+ "WHERE c.ntavolo = %d and c.pronto = 0;",ntavolo);
+					ResultSet rs = db.executeQuery(query);
+
+					ArrayList<Contiene_prodotto> l = new ArrayList<Contiene_prodotto>();
+					while (rs.next()) {
+						l.add(new Contiene_prodotto(rs.getInt("ntavolo"), rs.getInt("quantita"), rs.getInt("pronto"),
+								rs.getInt("idp"), rs.getString("nome"),
+								rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+					}
+					return om.writeValueAsString(l);
+				});
+		/*
+		// GET - mostra ordine dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine/prodotto/ntavolo"
+		get("/mostra_ordine/prodotto/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT p.* FROM contiene c "
+								+ "JOIN prodotto p ON c.idp = p.idp "
+								+ "WHERE c.ntavolo = %d;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Prodotto> p = new ArrayList<Prodotto>();
+			while (rs.next()) {
+				p.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+			}
+			return om.writeValueAsString(p);
+		});
+
+		// GET - mostra quantità ordine dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine/quantita/ntavolo"
+		get("/mostra_ordine/quantita/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT c.quantita FROM contiene c "
+					+ "JOIN prodotto p ON c.idp = p.idp "
+					+ "WHERE c.ntavolo = %d;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Integer> q = new ArrayList<Integer>();
+			while (rs.next()) {
+				q.add(new Integer(rs.getInt("quantita")));
+			}
+			return om.writeValueAsString(q);
+		});
+		
+		// GET - mostra ordine in preparazione dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine_preparazione/prodotto/ntavolo"
+		get("/mostra_ordine_preparazione/prodotto/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT p.* FROM contiene c "
+					+ "JOIN prodotto p ON c.idp = p.idp "
+					+ "WHERE c.ntavolo = %d AND c.pronto = 0;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Prodotto> p = new ArrayList<Prodotto>();
+			while (rs.next()) {
+				p.add(new Prodotto(rs.getInt("idp"), rs.getString("nome"),
+						rs.getInt("giacenza"), rs.getDouble("prezzo"), rs.getString("tipo")));
+			}
+			return om.writeValueAsString(p);
+		});
+		
+		// GET - mostra quantità ordine in preparazione dato ntavolo
+		// "http://sbaccioserver.ddns.net:8081/mostra_ordine_preparazione/quantita/ntavolo"
+		get("/mostra_ordine_preparazione/quantita/:ntavolo", (request, response) -> {
+			int ntavolo = Integer.parseInt(request.params(":ntavolo"));
+			String query;
+
+			query = String.format("SELECT c.quantita FROM contiene c "
+					+ "JOIN prodotto p ON c.idp = p.idp "
+					+ "WHERE c.ntavolo = %d AND pronto = 0;",ntavolo);
+			ResultSet rs = db.executeQuery(query);
+
+			ArrayList<Integer> q = new ArrayList<Integer>();
+			while (rs.next()) {
+				q.add(new Integer(rs.getInt("quantita")));
+			}
+			return om.writeValueAsString(q);
+		});
+		*/
+		
+		// PUT - update prodotto, dimuisco la giacenza in base alla quantità
+		// "http://sbaccioserver.ddns.net:8081/prodotto/updategiacenza/idp/giacenza"
+		put("/prodotto/updategiacenza/:idp/:giacenza", (request, response) -> {
+					int idp = Integer.parseInt(request.params(":idp"));
+					int giacenza = Integer.parseInt(request.params(":giacenza"));
+
+					String query;
+
+					query = String.format(
+							"UPDATE prodotto SET giacenza = %d "
+							+ "WHERE idp = %d;", giacenza, idp);	
+					db.executeUpdate(query);
+					return om.writeValueAsString("ok");
+
+				});
+		
+
+/*FINITO QUI*/
+	}
+
+	public static void main(String[] args) {
+		new ServerRest().run();
+	}
+}
