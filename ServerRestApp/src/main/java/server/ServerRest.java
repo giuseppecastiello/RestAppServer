@@ -342,7 +342,7 @@ public class ServerRest {
 					}
 					return om.writeValueAsString(l);
 				});
-		/*
+		
 		// GET - mostra ordine dato ntavolo
 		// "http://sbaccioserver.ddns.net:8081/mostra_ordine/prodotto/ntavolo"
 		get("/mostra_ordine/prodotto/:ntavolo", (request, response) -> {
@@ -379,7 +379,7 @@ public class ServerRest {
 			}
 			return om.writeValueAsString(q);
 		});
-		
+		/*
 		// GET - mostra ordine in preparazione dato ntavolo
 		// "http://sbaccioserver.ddns.net:8081/mostra_ordine_preparazione/prodotto/ntavolo"
 		get("/mostra_ordine_preparazione/prodotto/:ntavolo", (request, response) -> {
